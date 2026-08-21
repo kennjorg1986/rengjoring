@@ -9,13 +9,11 @@ function isoDatePlusDays(days) {
 }
 
 function guestCount(booking) {
-  // Lodgify-bookinger har vanligvis en "rooms" eller "people_count"-verdi
-  // avhengig av API-versjon. Vi prøver et par kjente felt-navn og faller
-  // tilbake på 0 hvis ingen finnes, i stedet for å krasje.
-  if (typeof booking.people === "number") return booking.people;
-  if (typeof booking.people_count === "number") return booking.people_count;
   if (Array.isArray(booking.rooms)) {
-    return booking.rooms.reduce((sum, r) => sum + (r.people || 0), 0);
+    return booking.rooms.reduce((sum, r) => {
+      const gb = r.guest_breakdown || {};
+      return sum + (gb.adults || 0) + (gb.children || 0);
+    }, 0);
   }
   return booking.guest_count || 0;
 }
@@ -66,13 +64,13 @@ async function buildCleaningTasks(dateISO = isoDatePlusDays(Number(process.env.C
       propertyId: pid,
       propertyName: propertyNameById.get(pid) || assignment.propertyName || `Leilighet ${pid}`,
       date: dateISO,
-      checkoutTime: dep.checkout_time || dep.departure_time || null,
+      checkoutTime: dep.check_out ? dep.check_out.time : null,
       departingGuest: guestName(dep),
       departingGuests: guestCount(dep),
       nextArrivals: nextArrivals.map((a) => ({
         guest: guestName(a),
         guests: guestCount(a),
-        checkinTime: a.checkin_time || a.arrival_time || null,
+        checkinTime: a.check_in ? a.check_in.time : null,
       })),
       cleaner: {
         name: assignment.cleanerName,
