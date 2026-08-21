@@ -26,11 +26,6 @@ function guestName(booking) {
   return booking?.guest?.name || booking.guest_name || "Ukjent gjest";
 }
 
-/**
- * Bygger dagens rengjøringsliste: for hver leilighet med utsjekk på
- * `dateISO`, finn ev. innsjekk samme dag for å vise hvor mange nye
- * gjester som venter og når de ankommer.
- */
 async function buildCleaningTasks(dateISO = isoDatePlusDays(Number(process.env.CLEANING_LOOKAHEAD_DAYS || 0))) {
   const [departures, arrivals, properties] = await Promise.all([
     lodgify.getDeparturesOn(dateISO),
@@ -38,9 +33,7 @@ async function buildCleaningTasks(dateISO = isoDatePlusDays(Number(process.env.C
     lodgify.getProperties().catch(() => []),
   ]);
 
-  const propertyNameById = new Map(
-    properties.map((p) => [String(p.id), p.name || p.property_name || `Leilighet ${p.id}`])
-  );
+  const propertyById = new Map(properties.map((p) => [String(p.id), p]));
 
   const arrivalsByProperty = new Map();
   for (const a of arrivals) {
@@ -57,12 +50,14 @@ async function buildCleaningTasks(dateISO = isoDatePlusDays(Number(process.env.C
     const pid = String(propertyIdOf(dep));
     const nextArrivals = arrivalsByProperty.get(pid) || [];
     const assignment = cleaners.forProperty(pid);
+    const property = propertyById.get(pid);
     const key = `${pid}_${dateISO}`;
 
     return {
       key,
       propertyId: pid,
-      propertyName: assignment.propertyName || propertyNameById.get(pid) || `Leilighet ${pid}`,
+      propertyName: assignment.propertyName || (property && property.name) || `Leilighet ${pid}`,
+      imageUrl: property && property.image_url ? "https:" + property.image_url : null,
       date: dateISO,
       checkoutTime: dep.check_out ? dep.check_out.time : null,
       departingGuest: guestName(dep),
@@ -81,7 +76,6 @@ async function buildCleaningTasks(dateISO = isoDatePlusDays(Number(process.env.C
     };
   });
 
-  // Sorter alfabetisk på leilighetsnavn, slik at Leilighet A alltid vises øverst
   tasks.sort((a, b) => a.propertyName.localeCompare(b.propertyName));
 
   return tasks;
