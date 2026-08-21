@@ -92,8 +92,6 @@
     position:relative;
     display:flex;
   }
-  /* Signature: perforated "room tag" stub on the left edge, like a
-     physical tag you'd clip to a door handle. */
   .stub{
     width:34px;
     flex:0 0 34px;
@@ -118,6 +116,17 @@
   .task.done .stub{background-color:var(--done);}
 
   .task-body{padding:16px 16px 14px;flex:1;min-width:0;}
+
+  .thumb{
+    width:100%;
+    height:150px;
+    object-fit:cover;
+    display:block;
+    border-radius:4px;
+    margin-bottom:12px;
+    background:var(--line);
+  }
+
   .task-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
   .prop-name{
     font-family:'Archivo Expanded', sans-serif;
@@ -259,17 +268,22 @@ function renderTask(t){
         </div>`).join("")
     : `<div class="arrival-line" style="background:#F0EEE7;border-left-color:var(--line);color:var(--ink-soft);">Ingen innsjekk samme dag</div>`;
 
+  const thumbHtml = t.imageUrl
+    ? `<img class="thumb" src="${t.imageUrl}" alt="${t.propertyName}" />`
+    : "";
+
   return `
   <div class="task ${t.done ? 'done' : ''}" id="task-${t.key}">
     <div class="stub"></div>
     <div class="task-body">
+      ${thumbHtml}
       <div class="task-top">
         <div class="prop-name">${t.propertyName}</div>
       </div>
       <div class="row">
         <span class="label">Utsjekk</span>
         <span class="value">${t.checkoutTime ? 'kl ' + t.checkoutTime : 'Ukjent tidspunkt'}</span>
-        </div>
+      </div>
       <div class="arrivals">${arrivalsHtml}</div>
       <div class="cleaner-line">Ansvarlig: ${t.cleaner.name || 'Ikke satt'}</div>
       <button class="done-btn" onclick="toggleDone('${t.key}', ${!t.done})">
