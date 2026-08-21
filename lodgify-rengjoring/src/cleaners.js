@@ -16,4 +16,9 @@ function forProperty(propertyId) {
   return found || { ...defaultCleaner, propertyId, propertyName: null };
 }
 
-module.exports = { load, forProperty };
+function knownPropertyIds() {
+  const { assignments } = load();
+  return assignments.map((a) => String(a.propertyId));
+}
+
+module.exports = { load, forProperty, knownPropertyIds };
