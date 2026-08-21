@@ -62,7 +62,7 @@ async function buildCleaningTasks(dateISO = isoDatePlusDays(Number(process.env.C
     return {
       key,
       propertyId: pid,
-      propertyName: propertyNameById.get(pid) || assignment.propertyName || `Leilighet ${pid}`,
+      propertyName: assignment.propertyName || propertyNameById.get(pid) || `Leilighet ${pid}`,
       date: dateISO,
       checkoutTime: dep.check_out ? dep.check_out.time : null,
       departingGuest: guestName(dep),
