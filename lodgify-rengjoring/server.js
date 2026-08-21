@@ -23,16 +23,15 @@ function requirePassword(req, res, next) {
   }
   next();
 }
-   app.get("/api/debug-departures", requirePassword, async (req, res) => {
-     try {
-       const lodgify = require("./src/lodgify");
-       const dateISO = req.query.date || new Date().toISOString().slice(0, 10);
-       const deps = await lodgify.getDeparturesOn(dateISO);
-       res.json({ dateISO, count: deps.length, deps });
-     } catch (err) {
-       res.status(500).json({ error: err.message });
-     }
-   });
+app.get("/api/debug-properties", requirePassword, async (req, res) => {
+  try {
+    const lodgify = require("./src/lodgify");
+    const props = await lodgify.getProperties();
+    res.json(props);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 app.get("/api/tasks", requirePassword, async (req, res) => {
   try {
     const dateISO = req.query.date; // valgfritt: ?date=YYYY-MM-DD
