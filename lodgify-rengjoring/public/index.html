@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Rengjøring i dag</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Expanded:wght@600;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F6F4EF;
+    --ink:#1E1C19;
+    --ink-soft:#5B564D;
+    --teal:#25616B;
+    --teal-deep:#153C43;
+    --amber:#E2A23B;
+    --done:#5C7A4E;
+    --line:#DCD6C8;
+    --card:#FFFFFF;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', system-ui, sans-serif;
+    min-height:100vh;
+    padding-bottom:80px;
+  }
+  header{
+    background:var(--teal-deep);
+    color:var(--paper);
+    padding:22px 20px 26px;
+    position:relative;
+  }
+  header h1{
+    font-family:'Archivo Expanded', sans-serif;
+    font-weight:800;
+    font-size:22px;
+    letter-spacing:0.02em;
+    margin:0 0 4px;
+    text-transform:uppercase;
+  }
+  header .date{
+    font-size:14px;
+    color:#BFD9DC;
+  }
+  header .count{
+    position:absolute;
+    right:20px;
+    top:20px;
+    background:var(--amber);
+    color:var(--teal-deep);
+    font-weight:700;
+    font-size:13px;
+    padding:6px 12px;
+    border-radius:999px;
+  }
+
+  #gate{
+    max-width:340px;
+    margin:80px auto;
+    padding:24px;
+    background:var(--card);
+    border:1px solid var(--line);
+    text-align:center;
+  }
+  #gate input{
+    width:100%;
+    padding:10px 12px;
+    font-size:16px;
+    border:1px solid var(--line);
+    margin:12px 0;
+  }
+  #gate button, .refresh-btn{
+    background:var(--teal);
+    color:#fff;
+    border:none;
+    padding:10px 18px;
+    font-weight:600;
+    font-size:15px;
+    cursor:pointer;
+  }
+  #gate p.err{color:#B23A2F;font-size:13px;}
+
+  main{max-width:640px;margin:0 auto;padding:18px 16px;}
+
+  .task{
+    background:var(--card);
+    border:1px solid var(--line);
+    margin-bottom:16px;
+    position:relative;
+    display:flex;
+  }
+  /* Signature: perforated "room tag" stub on the left edge, like a
+     physical tag you'd clip to a door handle. */
+  .stub{
+    width:34px;
+    flex:0 0 34px;
+    background:repeating-linear-gradient(
+      to bottom, var(--teal) 0 6px, transparent 6px 12px
+    );
+    background-color:var(--teal-deep);
+    position:relative;
+    border-right:2px dashed var(--paper);
+  }
+  .stub::before, .stub::after{
+    content:"";
+    position:absolute;
+    left:50%;
+    width:12px;height:12px;
+    background:var(--paper);
+    border-radius:50%;
+    transform:translateX(-50%);
+  }
+  .stub::before{top:-6px;}
+  .stub::after{bottom:-6px;}
+  .task.done .stub{background-color:var(--done);}
+
+  .task-body{padding:16px 16px 14px;flex:1;min-width:0;}
+  .task-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
+  .prop-name{
+    font-family:'Archivo Expanded', sans-serif;
+    font-weight:800;
+    font-size:19px;
+    text-transform:uppercase;
+    letter-spacing:0.01em;
+  }
+  .badge{
+    font-size:11px;
+    font-weight:700;
+    text-transform:uppercase;
+    padding:3px 8px;
+    border-radius:3px;
+    white-space:nowrap;
+  }
+  .badge.turnover{background:var(--amber);color:var(--teal-deep);}
+  .badge.quiet{background:var(--line);color:var(--ink-soft);}
+
+  .row{
+    display:flex;
+    justify-content:space-between;
+    font-size:14px;
+    padding:6px 0;
+    border-top:1px solid var(--line);
+  }
+  .row:first-of-type{border-top:none;margin-top:8px;}
+  .row .label{color:var(--ink-soft);}
+  .row .value{font-weight:600;text-align:right;}
+
+  .arrivals{margin-top:4px;}
+  .arrival-line{
+    font-size:13px;
+    color:var(--teal-deep);
+    background:#EAF2EE;
+    padding:6px 8px;
+    margin-top:6px;
+    border-left:3px solid var(--teal);
+  }
+
+  .cleaner-line{
+    font-size:13px;
+    color:var(--ink-soft);
+    margin-top:10px;
+  }
+
+  .done-btn{
+    margin-top:12px;
+    width:100%;
+    padding:10px;
+    font-weight:700;
+    font-size:14px;
+    border:1px solid var(--teal);
+    background:transparent;
+    color:var(--teal);
+    cursor:pointer;
+  }
+  .task.done .done-btn{
+    background:var(--done);
+    border-color:var(--done);
+    color:#fff;
+  }
+
+  .empty{
+    text-align:center;
+    color:var(--ink-soft);
+    padding:60px 20px;
+    font-size:15px;
+  }
+
+  footer.bar{
+    position:fixed;
+    bottom:0;left:0;right:0;
+    background:var(--card);
+    border-top:1px solid var(--line);
+    padding:10px 16px;
+    display:flex;
+    justify-content:center;
+  }
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <p style="font-weight:700;">Skriv inn passord</p>
+  <input type="password" id="pw" placeholder="Passord" />
+  <button onclick="unlock()">Lås opp</button>
+  <p class="err" id="gate-err"></p>
+</div>
+
+<div id="app" style="display:none;">
+  <header>
+    <div class="count" id="count-badge">–</div>
+    <h1>Rengjøring i dag</h1>
+    <div class="date" id="date-label"></div>
+  </header>
+  <main id="task-list"></main>
+  <footer class="bar">
+    <button class="refresh-btn" onclick="load()">Oppdater</button>
+  </footer>
+</div>
+
+<script>
+const PW_KEY = "rengjoring_pw";
+
+function unlock(){
+  const pw = document.getElementById('pw').value;
+  localStorage.setItem(PW_KEY, pw);
+  load();
+}
+
+async function api(path, opts={}){
+  const pw = localStorage.getItem(PW_KEY) || "";
+  const res = await fetch(path, {
+    ...opts,
+    headers: { "Content-Type": "application/json", "x-dashboard-password": pw, ...(opts.headers||{}) }
+  });
+  if(res.status === 401){
+    document.getElementById('gate').style.display = 'block';
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('gate-err').textContent = "Feil passord.";
+    throw new Error("unauthorized");
+  }
+  return res.json();
+}
+
+function fmtDate(iso){
+  if(!iso) return "";
+  const d = new Date(iso + "T00:00:00");
+  return d.toLocaleDateString('nb-NO', { weekday:'long', day:'numeric', month:'long' });
+}
+
+function renderTask(t){
+  const hasArrival = t.nextArrivals && t.nextArrivals.length > 0;
+  const arrivalsHtml = hasArrival
+    ? t.nextArrivals.map(a => `
+        <div class="arrival-line">
+          Nye gjester inn ${a.checkinTime ? "kl " + a.checkinTime : "samme dag"} — ${a.guests} gjester
+        </div>`).join("")
+    : `<div class="arrival-line" style="background:#F0EEE7;border-left-color:var(--line);color:var(--ink-soft);">Ingen innsjekk samme dag</div>`;
+
+  return `
+  <div class="task ${t.done ? 'done' : ''}" id="task-${t.key}">
+    <div class="stub"></div>
+    <div class="task-body">
+      <div class="task-top">
+        <div class="prop-name">${t.propertyName}</div>
+        <div class="badge ${hasArrival ? 'turnover' : 'quiet'}">${hasArrival ? 'Snuoperasjon' : 'Ingen innsjekk'}</div>
+      </div>
+      <div class="row">
+        <span class="label">Utsjekk</span>
+        <span class="value">${t.checkoutTime || 'i dag'} · ${t.departingGuests} gjester</span>
+      </div>
+      <div class="arrivals">${arrivalsHtml}</div>
+      <div class="cleaner-line">Ansvarlig: ${t.cleaner.name || 'Ikke satt'}</div>
+      <button class="done-btn" onclick="toggleDone('${t.key}', ${!t.done})">
+        ${t.done ? '✓ Rengjort' : 'Merk som rengjort'}
+      </button>
+    </div>
+  </div>`;
+}
+
+async function toggleDone(key, done){
+  await api(`/api/tasks/${encodeURIComponent(key)}/done`, {
+    method: 'POST',
+    body: JSON.stringify({ done })
+  });
+  load();
+}
+
+async function load(){
+  try{
+    const data = await api('/api/tasks');
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('date-label').textContent = fmtDate(data.date);
+    document.getElementById('count-badge').textContent = data.tasks.length + (data.tasks.length === 1 ? ' leilighet' : ' leiligheter');
+    const list = document.getElementById('task-list');
+    list.innerHTML = data.tasks.length
+      ? data.tasks.map(renderTask).join("")
+      : `<div class="empty">Ingen leiligheter trenger rengjøring i dag.</div>`;
+  }catch(e){
+    if(e.message !== "unauthorized") console.error(e);
+  }
+}
+
+if(localStorage.getItem(PW_KEY) !== null){
+  load();
+} 
+</script>
+</body>
+</html>

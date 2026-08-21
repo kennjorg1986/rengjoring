@@ -1,0 +1,24 @@
+{
+  "_kommentar": "Legg til én linje per leilighet. 'propertyId' må matche property_id/id fra Lodgify. 'propertyName' brukes kun som visningsnavn hvis oppslag mot Lodgify feiler.",
+  "assignments": [
+    {
+      "propertyId": "650564",
+      "propertyName": "Leilighet A",
+      "cleanerName": "Iza",
+      "phone": "+4748401403",
+      "email": "kennjorg1986@gmail.com"
+    },
+    {
+      "propertyId": "595022",
+      "propertyName": "Leilighet B",
+      "cleanerName": "Iza",
+      "phone": "+4748401403",
+      "email": "kennjorg1986@gmail.com"
+    }
+  ],
+  "defaultCleaner": {
+    "cleanerName": "Iza",
+    "phone": "+4748401403",
+    "email": "kennjorg1986@gmail.com"
+  }
+}

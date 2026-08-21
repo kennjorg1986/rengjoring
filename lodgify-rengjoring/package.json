@@ -1,0 +1,23 @@
+{
+  "name": "lodgify-rengjoring",
+  "version": "1.0.0",
+  "description": "Rengjøringsvarsling koblet mot Lodgify - viser hvilke leiligheter som trenger rengjøring, antall gjester og inn-/utsjekk, samt automatiske SMS/e-postvarsler til rengjørere.",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "check-now": "node src/runCleaningCheck.js"
+  },
+  "dependencies": {
+    "axios": "^1.7.7",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "node-cron": "^3.0.3",
+    "resend": "^4.0.1",
+    "twilio": "^5.3.5"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
