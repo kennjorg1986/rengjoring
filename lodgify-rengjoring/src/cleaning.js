@@ -52,8 +52,10 @@ async function buildCleaningTasks(dateISO = isoDatePlusDays(Number(process.env.C
   }
 
   const status = storage.getAll();
+  const knownIds = cleaners.knownPropertyIds();
+  const relevantDepartures = departures.filter((dep) => knownIds.includes(String(propertyIdOf(dep))));
 
-  const tasks = departures.map((dep) => {
+  const tasks = relevantDepartures.map((dep) => {
     const pid = String(propertyIdOf(dep));
     const nextArrivals = arrivalsByProperty.get(pid) || [];
     const assignment = cleaners.forProperty(pid);
