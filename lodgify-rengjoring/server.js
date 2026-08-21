@@ -31,7 +31,7 @@ app.get("/api/tasks", requirePassword, async (req, res) => {
     res.json({ date: dateISO || tasks[0]?.date || null, tasks });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message, details: err.response ? err.response.data : null });
   }
 });
 
@@ -49,7 +49,7 @@ app.post("/api/notify-now", requirePassword, async (req, res) => {
     res.json({ results });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message, details: err.response ? err.response.data : null });
   }
 });
 
