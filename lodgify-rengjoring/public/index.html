@@ -265,11 +265,10 @@ function renderTask(t){
     <div class="task-body">
       <div class="task-top">
         <div class="prop-name">${t.propertyName}</div>
-        <div class="badge ${hasArrival ? 'turnover' : 'quiet'}">${hasArrival ? 'Snuoperasjon' : 'Ingen innsjekk'}</div>
       </div>
       <div class="row">
         <span class="label">Utsjekk</span>
-        <span class="value">${t.checkoutTime ? 'kl ' + t.checkoutTime : 'Ukjent tidspunkt'} · ${t.departingGuests} gjester</span>
+        <span class="value">${t.checkoutTime ? 'kl ' + t.checkoutTime : 'Ukjent tidspunkt'}</span>
         </div>
       <div class="arrivals">${arrivalsHtml}</div>
       <div class="cleaner-line">Ansvarlig: ${t.cleaner.name || 'Ikke satt'}</div>
