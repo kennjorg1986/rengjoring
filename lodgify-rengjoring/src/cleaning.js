@@ -33,7 +33,7 @@ function guestName(booking) {
  * `dateISO`, finn ev. innsjekk samme dag for å vise hvor mange nye
  * gjester som venter og når de ankommer.
  */
-async function buildCleaningTasks(dateISO = isoDatePlusDays(Number(process.env.CLEANING_LOOKAHEAD_DAYS || 1))) {
+async function buildCleaningTasks(dateISO = isoDatePlusDays(Number(process.env.CLEANING_LOOKAHEAD_DAYS || 0))) {
   const [departures, arrivals, properties] = await Promise.all([
     lodgify.getDeparturesOn(dateISO),
     lodgify.getArrivalsOn(dateISO),
