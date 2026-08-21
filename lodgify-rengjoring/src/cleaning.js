@@ -81,8 +81,8 @@ async function buildCleaningTasks(dateISO = isoDatePlusDays(Number(process.env.C
     };
   });
 
-  // Sorter: leiligheter med raskt innkommende gjester (samme dag) øverst
-  tasks.sort((a, b) => (b.nextArrivals.length > 0) - (a.nextArrivals.length > 0));
+  // Sorter alfabetisk på leilighetsnavn, slik at Leilighet A alltid vises øverst
+  tasks.sort((a, b) => a.propertyName.localeCompare(b.propertyName));
 
   return tasks;
 }
