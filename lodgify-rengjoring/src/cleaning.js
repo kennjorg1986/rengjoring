@@ -26,12 +26,23 @@ function guestName(booking) {
   return booking?.guest?.name || booking.guest_name || "Ukjent gjest";
 }
 
+/** Filtrerer bort avbestilte/avslåtte bookinger, som Lodgify ellers sender med. */
+function isActiveBooking(booking) {
+  if (booking.is_deleted) return false;
+  if (booking.canceled_at) return false;
+  if (booking.status === "Declined" || booking.status === "Cancelled") return false;
+  return true;
+}
+
 async function buildCleaningTasks(dateISO = isoDatePlusDays(Number(process.env.CLEANING_LOOKAHEAD_DAYS || 0))) {
-  const [departures, arrivals, properties] = await Promise.all([
+  const [departuresRaw, arrivalsRaw, properties] = await Promise.all([
     lodgify.getDeparturesOn(dateISO),
     lodgify.getArrivalsOn(dateISO),
     lodgify.getProperties().catch(() => []),
   ]);
+
+  const departures = departuresRaw.filter(isActiveBooking);
+  const arrivals = arrivalsRaw.filter(isActiveBooking);
 
   const propertyById = new Map(properties.map((p) => [String(p.id), p]));
 
