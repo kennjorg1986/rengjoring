@@ -31,6 +31,17 @@ app.get("/api/debug-properties", requirePassword, async (req, res) => {
   }
 });
 
+app.get("/api/debug-day", requirePassword, async (req, res) => {
+  try {
+    const lodgify = require("./src/lodgify");
+    const dateISO = req.query.date;
+    const deps = await lodgify.getDeparturesOn(dateISO);
+    res.json({ dateISO, count: deps.length, deps });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get("/api/tasks", requirePassword, async (req, res) => {
   try {
     const dateISO = req.query.date;
