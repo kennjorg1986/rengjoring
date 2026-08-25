@@ -73,6 +73,7 @@ async function buildCleaningTasks(dateISO = isoDatePlusDays(Number(process.env.C
         email: assignment.email,
       },
       done: status[key]?.done || false,
+      note: status[key]?.note || "",
     };
   });
 
