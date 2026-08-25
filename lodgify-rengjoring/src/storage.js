@@ -19,7 +19,19 @@ function writeStatus(status) {
 function markDone(key, done) {
   const status = readStatus();
   status[key] = {
+    ...(status[key] || {}),
     done,
+    updatedAt: new Date().toISOString(),
+  };
+  writeStatus(status);
+  return status[key];
+}
+
+function setNote(key, note) {
+  const status = readStatus();
+  status[key] = {
+    ...(status[key] || {}),
+    note,
     updatedAt: new Date().toISOString(),
   };
   writeStatus(status);
@@ -30,4 +42,4 @@ function getAll() {
   return readStatus();
 }
 
-module.exports = { markDone, getAll };
+module.exports = { markDone, setNote, getAll };
