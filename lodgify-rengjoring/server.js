@@ -11,18 +11,16 @@ const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-// Enkel passordbeskyttelse for dashboard-API-et, slik at ikke hvem som
-// helst med lenken kan se gjesteinfo. Rengjørere skriver inn passordet
-// én gang i nettleseren (lagres i localStorage av frontend).
 function requirePassword(req, res, next) {
   const expected = process.env.DASHBOARD_PASSWORD;
-  if (!expected) return next(); // ingen passord satt = åpen tilgang
+  if (!expected) return next();
   const provided = req.header("x-dashboard-password") || req.query.password;
   if (provided !== expected) {
     return res.status(401).json({ error: "Feil eller manglende passord" });
   }
   next();
 }
+
 app.get("/api/debug-properties", requirePassword, async (req, res) => {
   try {
     const lodgify = require("./src/lodgify");
@@ -32,9 +30,10 @@ app.get("/api/debug-properties", requirePassword, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
 app.get("/api/tasks", requirePassword, async (req, res) => {
   try {
-    const dateISO = req.query.date; // valgfritt: ?date=YYYY-MM-DD
+    const dateISO = req.query.date;
     const tasks = await buildCleaningTasks(dateISO);
     res.json({ date: dateISO || tasks[0]?.date || null, tasks });
   } catch (err) {
@@ -47,6 +46,13 @@ app.post("/api/tasks/:key/done", requirePassword, (req, res) => {
   const { key } = req.params;
   const { done } = req.body;
   const updated = storage.markDone(key, !!done);
+  res.json({ key, ...updated });
+});
+
+app.post("/api/tasks/:key/note", requirePassword, (req, res) => {
+  const { key } = req.params;
+  const { note } = req.body;
+  const updated = storage.setNote(key, note || "");
   res.json({ key, ...updated });
 });
 
@@ -66,7 +72,6 @@ app.listen(port, () => {
   console.log(`Rengjøringsdashbord kjører på http://localhost:${port}`);
 });
 
-// Planlagt daglig varsling (SMS/e-post) - styres av NOTIFY_CRON i .env
 const cronExpr = process.env.NOTIFY_CRON || "0 9 * * *";
 cron.schedule(
   cronExpr,
