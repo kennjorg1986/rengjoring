@@ -30,7 +30,7 @@ function guestName(booking) {
 function isActiveBooking(booking) {
   if (booking.is_deleted) return false;
   if (booking.canceled_at) return false;
-  if (booking.status === "Declined" || booking.status === "Cancelled") return false;
+  if (booking.status !== "Booked") return false;
   return true;
 }
 
