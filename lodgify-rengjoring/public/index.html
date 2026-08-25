@@ -41,7 +41,24 @@
     margin:0 0 4px;
     text-transform:uppercase;
   }
-  header .date{
+  .day-nav{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-top:4px;
+  }
+  .day-nav button{
+    background:rgba(255,255,255,0.12);
+    border:1px solid rgba(255,255,255,0.3);
+    color:var(--paper);
+    font-size:12px;
+    font-weight:600;
+    padding:5px 10px;
+    cursor:pointer;
+    border-radius:3px;
+  }
+  .day-nav button:hover{background:rgba(255,255,255,0.22);}
+  .day-nav .date{
     font-size:14px;
     color:#BFD9DC;
   }
@@ -264,8 +281,13 @@
 <div id="app" style="display:none;">
   <header>
     <div class="count" id="count-badge">–</div>
-    <h1>Rengjøring i dag</h1>
-    <div class="date" id="date-label"></div>
+    <h1>Rengjøring</h1>
+    <div class="day-nav">
+      <button onclick="changeDay(-1)">‹ Forrige dag</button>
+      <span class="date" id="date-label"></span>
+      <button onclick="changeDay(1)">Neste dag ›</button>
+      <button onclick="goToday()" style="margin-left:6px;">I dag</button>
+    </div>
   </header>
   <main id="task-list"></main>
   <footer class="bar">
@@ -276,6 +298,7 @@
 
 <script>
 const PW_KEY = "rengjoring_pw";
+let dayOffset = 0;
 
 function unlock(){
   const pw = document.getElementById('pw').value;
@@ -302,6 +325,22 @@ function fmtDate(iso){
   if(!iso) return "";
   const d = new Date(iso + "T00:00:00");
   return d.toLocaleDateString('nb-NO', { weekday:'long', day:'numeric', month:'long' });
+}
+
+function isoDateForOffset(offset){
+  const d = new Date();
+  d.setDate(d.getDate() + offset);
+  return d.toISOString().slice(0, 10);
+}
+
+function changeDay(delta){
+  dayOffset += delta;
+  load();
+}
+
+function goToday(){
+  dayOffset = 0;
+  load();
 }
 
 function renderTask(t){
@@ -370,15 +409,18 @@ async function saveNote(key){
 
 async function load(){
   try{
-    const data = await api('/api/tasks');
+    const dateISO = isoDateForOffset(dayOffset);
+    const data = await api('/api/tasks?date=' + dateISO);
     document.getElementById('gate').style.display = 'none';
     document.getElementById('app').style.display = 'block';
-    document.getElementById('date-label').textContent = fmtDate(data.date);
+    let label = fmtDate(data.date);
+    if(dayOffset === 0) label += ' (i dag)';
+    document.getElementById('date-label').textContent = label;
     document.getElementById('count-badge').textContent = data.tasks.length + (data.tasks.length === 1 ? ' leilighet' : ' leiligheter');
     const list = document.getElementById('task-list');
     list.innerHTML = data.tasks.length
       ? data.tasks.map(renderTask).join("")
-      : `<div class="empty">Ingen leiligheter trenger rengjøring i dag.</div>`;
+      : `<div class="empty">Ingen leiligheter trenger rengjøring denne dagen.</div>`;
   }catch(e){
     if(e.message !== "unauthorized") console.error(e);
   }
@@ -389,7 +431,7 @@ if(localStorage.getItem(PW_KEY) !== null){
 }
 
 setInterval(() => {
-  if(localStorage.getItem(PW_KEY) !== null){
+  if(localStorage.getItem(PW_KEY) !== null && dayOffset === 0){
     load();
   }
 }, 3 * 60 * 1000);
