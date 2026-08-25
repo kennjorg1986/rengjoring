@@ -173,6 +173,44 @@
     margin-top:10px;
   }
 
+  .note-box{
+    margin-top:12px;
+  }
+  .note-box label{
+    font-size:12px;
+    font-weight:700;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    display:block;
+    margin-bottom:4px;
+  }
+  .note-box textarea{
+    width:100%;
+    min-height:60px;
+    padding:8px 10px;
+    font-family:inherit;
+    font-size:14px;
+    border:1px solid var(--line);
+    resize:vertical;
+    background:#FBFAF7;
+  }
+  .note-save-btn{
+    margin-top:6px;
+    background:var(--teal-deep);
+    color:#fff;
+    border:none;
+    padding:7px 14px;
+    font-weight:600;
+    font-size:13px;
+    cursor:pointer;
+  }
+  .note-saved-msg{
+    font-size:12px;
+    color:var(--done);
+    margin-left:8px;
+    display:none;
+  }
+
   .done-btn{
     margin-top:12px;
     width:100%;
@@ -205,6 +243,12 @@
     padding:10px 16px;
     display:flex;
     justify-content:center;
+    align-items:center;
+    gap:10px;
+  }
+  .auto-label{
+    font-size:12px;
+    color:var(--ink-soft);
   }
 </style>
 </head>
@@ -226,6 +270,7 @@
   <main id="task-list"></main>
   <footer class="bar">
     <button class="refresh-btn" onclick="load()">Oppdater</button>
+    <span class="auto-label">Oppdateres automatisk hvert 3. minutt</span>
   </footer>
 </div>
 
@@ -286,6 +331,14 @@ function renderTask(t){
       </div>
       <div class="arrivals">${arrivalsHtml}</div>
       <div class="cleaner-line">Ansvarlig: ${t.cleaner.name || 'Ikke satt'}</div>
+
+      <div class="note-box">
+        <label for="note-${t.key}">Beskjeder (f.eks. tidlig innsjekk, sen utsjekk, når leiligheten er klar)</label>
+        <textarea id="note-${t.key}" placeholder="Skriv en beskjed her...">${t.note || ""}</textarea>
+        <button class="note-save-btn" onclick="saveNote('${t.key}')">Lagre beskjed</button>
+        <span class="note-saved-msg" id="saved-${t.key}">Lagret ✓</span>
+      </div>
+
       <button class="done-btn" onclick="toggleDone('${t.key}', ${!t.done})">
         ${t.done ? '✓ Rengjort' : 'Merk som rengjort'}
       </button>
@@ -299,6 +352,20 @@ async function toggleDone(key, done){
     body: JSON.stringify({ done })
   });
   load();
+}
+
+async function saveNote(key){
+  const textarea = document.getElementById(`note-${key}`);
+  const note = textarea ? textarea.value : "";
+  await api(`/api/tasks/${encodeURIComponent(key)}/note`, {
+    method: 'POST',
+    body: JSON.stringify({ note })
+  });
+  const msg = document.getElementById(`saved-${key}`);
+  if(msg){
+    msg.style.display = 'inline';
+    setTimeout(() => { msg.style.display = 'none'; }, 2000);
+  }
 }
 
 async function load(){
@@ -319,7 +386,13 @@ async function load(){
 
 if(localStorage.getItem(PW_KEY) !== null){
   load();
-} 
+}
+
+setInterval(() => {
+  if(localStorage.getItem(PW_KEY) !== null){
+    load();
+  }
+}, 3 * 60 * 1000);
 </script>
 </body>
 </html>
