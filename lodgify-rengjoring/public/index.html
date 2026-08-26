@@ -17,6 +17,7 @@
     --done:#5C7A4E;
     --line:#DCD6C8;
     --card:#FFFFFF;
+    --red:#B23A2F;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
@@ -98,7 +99,7 @@
     font-size:15px;
     cursor:pointer;
   }
-  #gate p.err{color:#B23A2F;font-size:13px;}
+  #gate p.err{color:var(--red);font-size:13px;}
 
   main{max-width:640px;margin:0 auto;padding:18px 16px;}
 
@@ -144,7 +145,7 @@
     background:var(--line);
   }
 
-  .task-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
+  .task-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;}
   .prop-name{
     font-family:'Archivo Expanded', sans-serif;
     font-weight:800;
@@ -160,8 +161,9 @@
     border-radius:3px;
     white-space:nowrap;
   }
-  .badge.turnover{background:var(--amber);color:var(--teal-deep);}
-  .badge.quiet{background:var(--line);color:var(--ink-soft);}
+  .badge.paid{background:var(--done);color:#fff;}
+  .badge.unpaid{background:var(--red);color:#fff;}
+  .badge.self{background:var(--line);color:var(--ink-soft);}
 
   .row{
     display:flex;
@@ -262,7 +264,7 @@
     width:20px;
     height:20px;
     border-radius:50%;
-    background:#B23A2F;
+    background:var(--red);
     color:#fff;
     border:2px solid var(--card);
     font-size:12px;
@@ -300,6 +302,38 @@
     margin-left:8px;
     display:none;
   }
+
+  .payment-box{margin-top:12px;}
+  .payment-box .photo-label{
+    font-size:12px;
+    font-weight:700;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    display:block;
+    margin-bottom:6px;
+  }
+  .payment-checkbox{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-size:14px;
+    margin-bottom:8px;
+  }
+  .payment-checkbox input{width:16px;height:16px;}
+  .payment-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .payment-row input[type="number"]{
+    width:90px;
+    padding:7px 8px;
+    border:1px solid var(--line);
+    font-size:14px;
+    font-family:inherit;
+  }
+  .payment-row input[type="number"]::after{content:" kr";}
 
   .done-btn{
     margin-top:12px;
@@ -439,6 +473,15 @@ function renderTask(t){
       <button class="photo-delete-btn" onclick="deletePhoto('${t.key}', '${url.replace(/'/g, "\\'")}')" title="Slett bilde">×</button>
     </div>`).join("");
 
+  let paymentBadge;
+  if(t.selfCleaned){
+    paymentBadge = `<div class="badge self">Rengjort selv</div>`;
+  } else if(t.paid){
+    paymentBadge = `<div class="badge paid">Betalt ${t.amount} kr</div>`;
+  } else {
+    paymentBadge = `<div class="badge unpaid">Ikke betalt</div>`;
+  }
+
   return `
   <div class="task ${t.done ? 'done' : ''}" id="task-${t.key}">
     <div class="stub"></div>
@@ -446,6 +489,7 @@ function renderTask(t){
       ${thumbHtml}
       <div class="task-top">
         <div class="prop-name">${t.propertyName}</div>
+        ${paymentBadge}
       </div>
       <div class="row">
         <span class="label">Utsjekk</span>
@@ -475,6 +519,22 @@ function renderTask(t){
           </label>
         </div>
         <span class="photo-uploading-msg" id="uploading-${t.key}">Laster opp...</span>
+      </div>
+
+      <div class="payment-box">
+        <label class="photo-label">Betaling</label>
+        <label class="payment-checkbox">
+          <input type="checkbox" id="self-${t.key}" ${t.selfCleaned ? 'checked' : ''} onchange="toggleSelfCleaned('${t.key}', this.checked)" />
+          Rengjort selv (ingen betaling)
+        </label>
+        <div class="payment-row" id="payment-row-${t.key}" style="${t.selfCleaned ? 'display:none;' : ''}">
+          <input type="number" id="amount-${t.key}" value="${t.amount}" min="0" step="10" />
+          <label class="payment-checkbox">
+            <input type="checkbox" id="paid-${t.key}" ${t.paid ? 'checked' : ''} />
+            Betalt
+          </label>
+          <button class="note-save-btn" onclick="savePayment('${t.key}')">Lagre betaling</button>
+        </div>
       </div>
 
       <button class="done-btn" onclick="toggleDone('${t.key}', ${!t.done})">
@@ -548,6 +608,28 @@ async function deletePhoto(key, url){
   await api(`/api/tasks/${encodeURIComponent(key)}/photos/delete`, {
     method: 'POST',
     body: JSON.stringify({ url })
+  });
+  load();
+}
+
+async function toggleSelfCleaned(key, checked){
+  const row = document.getElementById(`payment-row-${key}`);
+  if(row) row.style.display = checked ? 'none' : '';
+  await api(`/api/tasks/${encodeURIComponent(key)}/payment`, {
+    method: 'POST',
+    body: JSON.stringify({ selfCleaned: checked })
+  });
+  load();
+}
+
+async function savePayment(key){
+  const amountInput = document.getElementById(`amount-${key}`);
+  const paidInput = document.getElementById(`paid-${key}`);
+  const amount = amountInput ? Number(amountInput.value) : 400;
+  const paid = paidInput ? paidInput.checked : false;
+  await api(`/api/tasks/${encodeURIComponent(key)}/payment`, {
+    method: 'POST',
+    body: JSON.stringify({ amount, paid })
   });
   load();
 }
