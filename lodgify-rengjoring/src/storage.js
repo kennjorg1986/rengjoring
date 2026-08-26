@@ -64,8 +64,22 @@ function removePhoto(key, url) {
   return status[key];
 }
 
+function setPayment(key, { amount, paid, selfCleaned }) {
+  const status = readStatus();
+  const existing = status[key] || {};
+  status[key] = {
+    ...existing,
+    amount: amount !== undefined ? amount : existing.amount,
+    paid: paid !== undefined ? paid : existing.paid,
+    selfCleaned: selfCleaned !== undefined ? selfCleaned : existing.selfCleaned,
+    updatedAt: new Date().toISOString(),
+  };
+  writeStatus(status);
+  return status[key];
+}
+
 function getAll() {
   return readStatus();
 }
 
-module.exports = { markDone, setNote, addPhoto, removePhoto, getAll };
+module.exports = { markDone, setNote, addPhoto, removePhoto, setPayment, getAll };
