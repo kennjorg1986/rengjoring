@@ -51,8 +51,21 @@ function addPhoto(key, url) {
   return status[key];
 }
 
+function removePhoto(key, url) {
+  const status = readStatus();
+  const existing = status[key] || {};
+  const photos = Array.isArray(existing.photos) ? existing.photos.filter((u) => u !== url) : [];
+  status[key] = {
+    ...existing,
+    photos,
+    updatedAt: new Date().toISOString(),
+  };
+  writeStatus(status);
+  return status[key];
+}
+
 function getAll() {
   return readStatus();
 }
 
-module.exports = { markDone, setNote, addPhoto, getAll };
+module.exports = { markDone, setNote, addPhoto, removePhoto, getAll };
