@@ -47,6 +47,7 @@
     align-items:center;
     gap:10px;
     margin-top:4px;
+    flex-wrap:wrap;
   }
   .day-nav button{
     background:rgba(255,255,255,0.12);
@@ -59,6 +60,11 @@
     border-radius:3px;
   }
   .day-nav button:hover{background:rgba(255,255,255,0.22);}
+  .day-nav button.report-btn{
+    background:var(--amber);
+    color:var(--teal-deep);
+    border-color:var(--amber);
+  }
   .day-nav .date{
     font-size:14px;
     color:#BFD9DC;
@@ -333,7 +339,6 @@
     font-size:14px;
     font-family:inherit;
   }
-  .payment-row input[type="number"]::after{content:" kr";}
 
   .done-btn{
     margin-top:12px;
@@ -374,6 +379,61 @@
     font-size:12px;
     color:var(--ink-soft);
   }
+
+  .report-summary{
+    background:var(--card);
+    border:1px solid var(--line);
+    padding:16px;
+    margin-bottom:16px;
+  }
+  .report-summary-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    margin-top:10px;
+  }
+  .report-stat{
+    background:var(--paper);
+    padding:10px 12px;
+    border-left:3px solid var(--teal);
+  }
+  .report-stat.paid{border-left-color:var(--done);}
+  .report-stat.unpaid{border-left-color:var(--red);}
+  .report-stat.self{border-left-color:var(--line);}
+  .report-stat .num{
+    font-family:'Archivo Expanded', sans-serif;
+    font-weight:800;
+    font-size:20px;
+    display:block;
+  }
+  .report-stat .lbl{
+    font-size:12px;
+    color:var(--ink-soft);
+  }
+  .report-entry{
+    background:var(--card);
+    border:1px solid var(--line);
+    padding:12px 14px;
+    margin-bottom:8px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+  }
+  .report-entry .re-left{min-width:0;}
+  .report-entry .re-date{
+    font-size:12px;
+    color:var(--ink-soft);
+  }
+  .report-entry .re-name{
+    font-weight:700;
+    font-size:15px;
+  }
+  .report-empty{
+    text-align:center;
+    color:var(--ink-soft);
+    padding:40px 20px;
+  }
 </style>
 </head>
 <body>
@@ -393,10 +453,22 @@
       <button onclick="changeDay(-1)">‹ Forrige dag</button>
       <span class="date" id="date-label"></span>
       <button onclick="changeDay(1)">Neste dag ›</button>
-      <button onclick="goToday()" style="margin-left:6px;">I dag</button>
+      <button onclick="goToday()">I dag</button>
+      <button class="report-btn" onclick="showReport()">📊 Rapport</button>
     </div>
   </header>
   <main id="task-list"></main>
+
+  <main id="report-view" style="display:none;">
+    <div class="day-nav" style="background:var(--teal-deep);padding:12px 16px;margin:-18px -16px 16px;">
+      <button onclick="changeReportMonth(-1)">‹ Forrige måned</button>
+      <span class="date" id="report-month-label"></span>
+      <button onclick="changeReportMonth(1)">Neste måned ›</button>
+      <button onclick="hideReport()">← Tilbake</button>
+    </div>
+    <div id="report-content"></div>
+  </main>
+
   <footer class="bar">
     <button class="refresh-btn" onclick="load()">Oppdater</button>
     <span class="auto-label">Oppdateres automatisk hvert 3. minutt</span>
@@ -406,6 +478,7 @@
 <script>
 const PW_KEY = "rengjoring_pw";
 let dayOffset = 0;
+let reportMonthOffset = 0;
 
 const CLOUDINARY_CLOUD_NAME = "silizk68";
 const CLOUDINARY_UPLOAD_PRESET = "Rengjoring-bilder";
@@ -650,6 +723,89 @@ async function load(){
       : `<div class="empty">Ingen leiligheter trenger rengjøring denne dagen.</div>`;
   }catch(e){
     if(e.message !== "unauthorized") console.error(e);
+  }
+}
+
+function isoMonthForOffset(offset){
+  const d = new Date();
+  d.setMonth(d.getMonth() + offset);
+  return d.toISOString().slice(0, 7);
+}
+
+function fmtMonth(yearMonth){
+  const [y, m] = yearMonth.split('-').map(Number);
+  const d = new Date(y, m - 1, 1);
+  return d.toLocaleDateString('nb-NO', { month: 'long', year: 'numeric' });
+}
+
+function showReport(){
+  document.getElementById('task-list').style.display = 'none';
+  document.getElementById('report-view').style.display = 'block';
+  loadReport();
+}
+
+function hideReport(){
+  document.getElementById('report-view').style.display = 'none';
+  document.getElementById('task-list').style.display = 'block';
+}
+
+function changeReportMonth(delta){
+  reportMonthOffset += delta;
+  loadReport();
+}
+
+function renderReportEntry(e){
+  let badge;
+  if(e.selfCleaned){
+    badge = `<div class="badge self">Rengjort selv</div>`;
+  } else if(e.paid){
+    badge = `<div class="badge paid">Betalt ${e.amount} kr</div>`;
+  } else {
+    badge = `<div class="badge unpaid">Ikke betalt ${e.amount} kr</div>`;
+  }
+  const d = new Date(e.date + 'T00:00:00');
+  const dateStr = d.toLocaleDateString('nb-NO', { day: 'numeric', month: 'short' });
+  return `
+  <div class="report-entry">
+    <div class="re-left">
+      <div class="re-date">${dateStr}${e.done ? ' · rengjort' : ''}</div>
+      <div class="re-name">${e.propertyName}</div>
+    </div>
+    ${badge}
+  </div>`;
+}
+
+async function loadReport(){
+  const yearMonth = isoMonthForOffset(reportMonthOffset);
+  document.getElementById('report-month-label').textContent = fmtMonth(yearMonth);
+  const content = document.getElementById('report-content');
+  content.innerHTML = `<div class="report-empty">Henter rapport...</div>`;
+
+  try{
+    const data = await api('/api/report?month=' + yearMonth);
+    const t = data.totals;
+
+    const summaryHtml = `
+      <div class="report-summary">
+        <div class="prop-name">Oppsummering</div>
+        <div class="report-summary-grid">
+          <div class="report-stat"><span class="num">${t.count}</span><span class="lbl">Rengjøringer totalt</span></div>
+          <div class="report-stat paid"><span class="num">${t.totalPaidAmount} kr</span><span class="lbl">Betalt (${t.paidCount} stk)</span></div>
+          <div class="report-stat unpaid"><span class="num">${t.totalUnpaidAmount} kr</span><span class="lbl">Ikke betalt (${t.unpaidCount} stk)</span></div>
+          <div class="report-stat self"><span class="num">${t.selfCleanedCount}</span><span class="lbl">Rengjort selv</span></div>
+        </div>
+      </div>`;
+
+    const entriesHtml = data.entries.length
+      ? data.entries.map(renderReportEntry).join("")
+      : `<div class="report-empty">Ingen rengjøringer denne måneden.</div>`;
+
+    content.innerHTML = summaryHtml + entriesHtml;
+  }catch(e){
+    if(e.message !== "unauthorized"){
+      content.innerHTML = `<div class="report-empty">Kunne ikke hente rapporten.</div>`;
+      console.error(e);
+    }
   }
 }
 
