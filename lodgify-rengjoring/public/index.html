@@ -5,19 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Rengjøring i dag</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Archivo+Expanded:wght@600;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Expanded:wght@600;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --paper:#F6F4EF;
-    --ink:#1E1C19;
-    --ink-soft:#5B564D;
-    --teal:#25616B;
-    --teal-deep:#153C43;
-    --amber:#E2A23B;
-    --done:#5C7A4E;
-    --line:#DCD6C8;
+    --paper:#EEF0E9;
+    --ink:#1A211E;
+    --ink-soft:#5C6B62;
+    --teal:#1D6E68;
+    --teal-deep:#0E3A3B;
+    --brass:#C79A3D;
+    --done:#3F6B4C;
+    --rust:#A6432C;
+    --line:#D8D9CC;
     --card:#FFFFFF;
-    --red:#B23A2F;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
@@ -26,168 +26,221 @@
     color:var(--ink);
     font-family:'IBM Plex Sans', system-ui, sans-serif;
     min-height:100vh;
-    padding-bottom:80px;
+    padding-bottom:88px;
+    -webkit-font-smoothing:antialiased;
   }
+  *:focus-visible{outline:2px solid var(--teal); outline-offset:2px;}
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important; animation:none !important;}
+  }
+
   header{
     background:var(--teal-deep);
+    background-image:
+      radial-gradient(circle at 92% -10%, rgba(199,154,61,0.16), transparent 55%);
     color:var(--paper);
-    padding:22px 20px 26px;
+    padding:24px 20px 20px;
     position:relative;
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:600;
+    font-size:11px;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color:#9FC3BE;
+    margin:0 0 6px;
   }
   header h1{
     font-family:'Archivo Expanded', sans-serif;
     font-weight:800;
-    font-size:22px;
-    letter-spacing:0.02em;
-    margin:0 0 4px;
+    font-size:26px;
+    letter-spacing:0.01em;
+    margin:0 0 14px;
     text-transform:uppercase;
+    line-height:1;
   }
   .day-nav{
     display:flex;
     align-items:center;
-    gap:10px;
-    margin-top:4px;
+    gap:8px;
     flex-wrap:wrap;
   }
   .day-nav button{
-    background:rgba(255,255,255,0.12);
-    border:1px solid rgba(255,255,255,0.3);
+    background:rgba(255,255,255,0.08);
+    border:1px solid rgba(255,255,255,0.28);
     color:var(--paper);
-    font-size:12px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
     font-weight:600;
-    padding:5px 10px;
+    letter-spacing:0.04em;
+    padding:7px 12px;
     cursor:pointer;
     border-radius:3px;
+    transition:background 0.15s ease, border-color 0.15s ease;
   }
-  .day-nav button:hover{background:rgba(255,255,255,0.22);}
+  .day-nav button:hover{background:rgba(255,255,255,0.18); border-color:rgba(255,255,255,0.45);}
   .day-nav button.report-btn{
-    background:var(--amber);
+    background:var(--brass);
     color:var(--teal-deep);
-    border-color:var(--amber);
+    border-color:var(--brass);
+    margin-left:auto;
+    font-weight:700;
   }
+  .day-nav button.report-btn:hover{filter:brightness(1.08);}
   .day-nav .date{
-    font-size:14px;
-    color:#BFD9DC;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:#BFD9D3;
+    padding:0 2px;
   }
   header .count{
     position:absolute;
     right:20px;
-    top:20px;
-    background:var(--amber);
+    top:22px;
+    background:var(--brass);
     color:var(--teal-deep);
+    font-family:'IBM Plex Mono', monospace;
     font-weight:700;
-    font-size:13px;
-    padding:6px 12px;
+    font-size:11px;
+    letter-spacing:0.03em;
+    padding:5px 11px;
     border-radius:999px;
   }
 
   #gate{
     max-width:340px;
-    margin:80px auto;
-    padding:24px;
+    margin:100px auto;
+    padding:28px;
     background:var(--card);
     border:1px solid var(--line);
+    box-shadow:0 2px 6px rgba(14,58,59,0.06), 0 10px 30px rgba(14,58,59,0.08);
     text-align:center;
   }
+  #gate p{font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-soft); font-weight:600;}
   #gate input{
     width:100%;
-    padding:10px 12px;
+    padding:11px 12px;
     font-size:16px;
     border:1px solid var(--line);
-    margin:12px 0;
+    margin:14px 0;
+    font-family:inherit;
   }
   #gate button, .refresh-btn{
-    background:var(--teal);
+    background:var(--teal-deep);
     color:#fff;
     border:none;
-    padding:10px 18px;
+    padding:11px 20px;
     font-weight:600;
-    font-size:15px;
+    font-size:14px;
     cursor:pointer;
+    font-family:'IBM Plex Mono', monospace;
+    letter-spacing:0.03em;
   }
-  #gate p.err{color:var(--red);font-size:13px;}
+  #gate p.err{color:var(--rust);font-size:13px;font-family:'IBM Plex Sans';text-transform:none;letter-spacing:0;font-weight:400;}
 
-  main{max-width:640px;margin:0 auto;padding:18px 16px;}
+  main{max-width:640px;margin:0 auto;padding:24px 16px 4px;}
 
   .task{
     background:var(--card);
     border:1px solid var(--line);
-    margin-bottom:16px;
+    margin-bottom:22px;
     position:relative;
     display:flex;
+    box-shadow:0 1px 2px rgba(14,58,59,0.04), 0 6px 18px rgba(14,58,59,0.07);
   }
   .stub{
-    width:34px;
-    flex:0 0 34px;
+    width:30px;
+    flex:0 0 30px;
     background:repeating-linear-gradient(
-      to bottom, var(--teal) 0 6px, transparent 6px 12px
+      to bottom, var(--teal) 0 7px, transparent 7px 14px
     );
     background-color:var(--teal-deep);
     position:relative;
-    border-right:2px dashed var(--paper);
+    border-right:2px dashed var(--card);
   }
   .stub::before, .stub::after{
     content:"";
     position:absolute;
     left:50%;
-    width:12px;height:12px;
+    width:13px;height:13px;
     background:var(--paper);
     border-radius:50%;
     transform:translateX(-50%);
   }
-  .stub::before{top:-6px;}
-  .stub::after{bottom:-6px;}
+  .stub::before{top:-6.5px;}
+  .stub::after{bottom:-6.5px;}
   .task.done .stub{background-color:var(--done);}
 
-  .task-body{padding:16px 16px 14px;flex:1;min-width:0;}
+  .task-body{padding:18px 18px 16px;flex:1;min-width:0;}
 
   .thumb{
     width:100%;
-    height:150px;
+    height:152px;
     object-fit:cover;
     display:block;
-    border-radius:4px;
-    margin-bottom:12px;
+    margin-bottom:14px;
     background:var(--line);
   }
 
-  .task-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;}
+  .task-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:2px;}
   .prop-name{
     font-family:'Archivo Expanded', sans-serif;
     font-weight:800;
-    font-size:19px;
+    font-size:20px;
     text-transform:uppercase;
-    letter-spacing:0.01em;
+    letter-spacing:0.005em;
+    line-height:1.15;
   }
-  .badge{
-    font-size:11px;
+
+  .stamp{
+    display:inline-block;
+    font-family:'IBM Plex Mono', monospace;
     font-weight:700;
+    font-size:11px;
+    letter-spacing:0.07em;
     text-transform:uppercase;
-    padding:3px 8px;
-    border-radius:3px;
+    padding:4px 9px;
+    border:2px solid currentColor;
+    border-radius:2px;
+    transform:rotate(-3deg);
+    mix-blend-mode:multiply;
     white-space:nowrap;
+    flex-shrink:0;
   }
-  .badge.paid{background:var(--done);color:#fff;}
-  .badge.unpaid{background:var(--red);color:#fff;}
-  .badge.self{background:var(--line);color:var(--ink-soft);}
+  .stamp.paid{color:var(--done);}
+  .stamp.unpaid{color:var(--rust);}
+  .stamp.self{color:var(--ink-soft);}
 
   .row{
     display:flex;
     justify-content:space-between;
+    align-items:baseline;
     font-size:14px;
-    padding:6px 0;
+    padding:9px 0;
     border-top:1px solid var(--line);
+    margin-top:8px;
   }
-  .row:first-of-type{border-top:none;margin-top:8px;}
-  .row .label{color:var(--ink-soft);}
-  .row .value{font-weight:600;text-align:right;}
+  .row .label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  .row .value{
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:600;
+    font-size:14px;
+    text-align:right;
+  }
 
-  .arrivals{margin-top:4px;}
+  .arrivals{margin-top:8px;}
   .arrival-line{
     font-size:13px;
     color:var(--teal-deep);
-    background:#EAF2EE;
-    padding:6px 8px;
+    background:#EAF0EC;
+    padding:8px 10px;
     margin-top:6px;
     border-left:3px solid var(--teal);
   }
@@ -195,71 +248,70 @@
   .cleaner-line{
     font-size:13px;
     color:var(--ink-soft);
-    margin-top:10px;
-  }
-
-  .note-box{
     margin-top:12px;
   }
-  .note-box label{
-    font-size:12px;
-    font-weight:700;
+  .cleaner-line b{color:var(--ink); font-weight:600;}
+
+  .section{
+    margin-top:16px;
+    padding-top:16px;
+    border-top:2px dashed var(--line);
+  }
+  .section-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:0.07em;
     text-transform:uppercase;
     color:var(--ink-soft);
     display:block;
-    margin-bottom:4px;
+    margin-bottom:8px;
   }
+
   .note-box textarea{
     width:100%;
     min-height:60px;
-    padding:8px 10px;
-    font-family:inherit;
+    padding:9px 10px;
+    font-family:'IBM Plex Sans', sans-serif;
     font-size:14px;
     border:1px solid var(--line);
     resize:vertical;
-    background:#FBFAF7;
+    background:var(--paper);
   }
-  .note-save-btn{
-    margin-top:6px;
-    background:var(--teal-deep);
-    color:#fff;
-    border:none;
-    padding:7px 14px;
+  .ghost-btn{
+    margin-top:8px;
+    background:transparent;
+    color:var(--teal-deep);
+    border:1px solid var(--teal-deep);
+    padding:8px 14px;
     font-weight:600;
-    font-size:13px;
+    font-size:12px;
+    letter-spacing:0.03em;
     cursor:pointer;
+    font-family:'IBM Plex Mono', monospace;
+    transition:background 0.15s ease, color 0.15s ease;
   }
+  .ghost-btn:hover{background:var(--teal-deep); color:#fff;}
   .note-saved-msg{
     font-size:12px;
     color:var(--done);
-    margin-left:8px;
+    margin-left:10px;
     display:none;
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:600;
   }
 
-  .photo-section{margin-top:12px;}
-  .photo-section .photo-label{
-    font-size:12px;
-    font-weight:700;
-    text-transform:uppercase;
-    color:var(--ink-soft);
-    display:block;
-    margin-bottom:6px;
-  }
   .photo-gallery{
     display:flex;
     flex-wrap:wrap;
     gap:10px;
-    margin-bottom:8px;
+    margin-bottom:10px;
   }
-  .photo-item{
-    position:relative;
-    display:inline-block;
-  }
+  .photo-item{position:relative; display:inline-block;}
   .photo-thumb{
     width:64px;
     height:64px;
     object-fit:cover;
-    border-radius:4px;
     border:1px solid var(--line);
     display:block;
   }
@@ -270,7 +322,7 @@
     width:20px;
     height:20px;
     border-radius:50%;
-    background:var(--red);
+    background:var(--rust);
     color:#fff;
     border:2px solid var(--card);
     font-size:12px;
@@ -281,51 +333,17 @@
     justify-content:center;
     padding:0;
   }
-  .photo-btn-row{
-    display:flex;
-    gap:8px;
-    flex-wrap:wrap;
-  }
-  .photo-upload-btn{
-    display:inline-block;
-    background:var(--teal-deep);
-    color:#fff;
-    border:none;
-    padding:7px 14px;
-    font-weight:600;
-    font-size:13px;
-    cursor:pointer;
-  }
-  .photo-upload-btn.secondary{
-    background:transparent;
-    color:var(--teal-deep);
-    border:1px solid var(--teal-deep);
-  }
-  .photo-upload-input{display:none;}
-  .photo-uploading-msg{
-    font-size:12px;
-    color:var(--ink-soft);
-    margin-left:8px;
-    display:none;
-  }
+  .photo-btn-row{display:flex; gap:8px; flex-wrap:wrap;}
 
-  .payment-box{margin-top:12px;}
-  .payment-box .photo-label{
-    font-size:12px;
-    font-weight:700;
-    text-transform:uppercase;
-    color:var(--ink-soft);
-    display:block;
-    margin-bottom:6px;
-  }
   .payment-checkbox{
     display:flex;
     align-items:center;
-    gap:6px;
-    font-size:14px;
-    margin-bottom:8px;
+    gap:7px;
+    font-size:13px;
+    margin-bottom:10px;
+    color:var(--ink);
   }
-  .payment-checkbox input{width:16px;height:16px;}
+  .payment-checkbox input{width:16px;height:16px; accent-color:var(--teal-deep);}
   .payment-row{
     display:flex;
     align-items:center;
@@ -333,113 +351,148 @@
     flex-wrap:wrap;
   }
   .payment-row input[type="number"]{
-    width:90px;
-    padding:7px 8px;
+    width:88px;
+    padding:8px 9px;
     border:1px solid var(--line);
     font-size:14px;
-    font-family:inherit;
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:600;
+    background:var(--paper);
   }
 
   .done-btn{
-    margin-top:12px;
+    margin-top:18px;
     width:100%;
-    padding:10px;
+    padding:13px;
     font-weight:700;
-    font-size:14px;
-    border:1px solid var(--teal);
-    background:transparent;
-    color:var(--teal);
-    cursor:pointer;
-  }
-  .task.done .done-btn{
-    background:var(--done);
-    border-color:var(--done);
+    font-size:13px;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    border:none;
+    background:var(--teal-deep);
     color:#fff;
+    cursor:pointer;
+    font-family:'IBM Plex Mono', monospace;
+    transition:background 0.15s ease;
   }
+  .done-btn:hover{background:var(--teal);}
+  .task.done .done-btn{background:var(--done);}
+  .task.done .done-btn:hover{filter:brightness(1.08);}
 
   .empty{
     text-align:center;
     color:var(--ink-soft);
-    padding:60px 20px;
-    font-size:15px;
+    padding:64px 24px;
+    background:var(--card);
+    border:1px solid var(--line);
   }
+  .empty .empty-icon{
+    font-size:28px;
+    display:block;
+    margin-bottom:10px;
+  }
+  .empty .empty-title{
+    font-family:'Archivo Expanded', sans-serif;
+    font-weight:800;
+    font-size:16px;
+    text-transform:uppercase;
+    color:var(--ink);
+    margin-bottom:4px;
+  }
+  .empty .empty-sub{font-size:13px;}
 
   footer.bar{
     position:fixed;
     bottom:0;left:0;right:0;
     background:var(--card);
     border-top:1px solid var(--line);
-    padding:10px 16px;
+    padding:12px 16px;
     display:flex;
     justify-content:center;
     align-items:center;
-    gap:10px;
+    gap:12px;
   }
   .auto-label{
-    font-size:12px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
     color:var(--ink-soft);
   }
 
+  #report-view .day-nav{
+    background:var(--teal-deep);
+    padding:14px 16px;
+    margin:-24px -16px 20px;
+  }
   .report-summary{
     background:var(--card);
     border:1px solid var(--line);
-    padding:16px;
-    margin-bottom:16px;
+    padding:18px;
+    margin-bottom:20px;
+    box-shadow:0 1px 2px rgba(14,58,59,0.04), 0 6px 18px rgba(14,58,59,0.07);
   }
+  .report-summary .prop-name{margin-bottom:4px;}
   .report-summary-grid{
     display:grid;
     grid-template-columns:1fr 1fr;
-    gap:12px;
-    margin-top:10px;
+    gap:10px;
+    margin-top:12px;
   }
   .report-stat{
     background:var(--paper);
-    padding:10px 12px;
+    padding:12px 14px;
     border-left:3px solid var(--teal);
   }
   .report-stat.paid{border-left-color:var(--done);}
-  .report-stat.unpaid{border-left-color:var(--red);}
+  .report-stat.unpaid{border-left-color:var(--rust);}
   .report-stat.self{border-left-color:var(--line);}
   .report-stat .num{
-    font-family:'Archivo Expanded', sans-serif;
-    font-weight:800;
-    font-size:20px;
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:700;
+    font-size:19px;
     display:block;
   }
   .report-stat .lbl{
-    font-size:12px;
+    font-size:11px;
     color:var(--ink-soft);
+    font-family:'IBM Plex Mono', monospace;
+    letter-spacing:0.03em;
+    text-transform:uppercase;
   }
   .report-entry{
     background:var(--card);
     border:1px solid var(--line);
-    padding:12px 14px;
+    padding:13px 16px;
     margin-bottom:8px;
     display:flex;
     justify-content:space-between;
     align-items:center;
-    gap:10px;
+    gap:12px;
   }
   .report-entry .re-left{min-width:0;}
   .report-entry .re-date{
-    font-size:12px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
     color:var(--ink-soft);
+    letter-spacing:0.03em;
   }
   .report-entry .re-name{
     font-weight:700;
     font-size:15px;
+    margin-top:2px;
   }
   .report-empty{
     text-align:center;
     color:var(--ink-soft);
-    padding:40px 20px;
+    padding:48px 20px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
   }
 </style>
 </head>
 <body>
 
 <div id="gate">
-  <p style="font-weight:700;">Skriv inn passord</p>
+  <p>Skriv inn passord</p>
   <input type="password" id="pw" placeholder="Passord" />
   <button onclick="unlock()">Lås opp</button>
   <p class="err" id="gate-err"></p>
@@ -448,30 +501,31 @@
 <div id="app" style="display:none;">
   <header>
     <div class="count" id="count-badge">–</div>
+    <p class="eyebrow">Daglig manifest</p>
     <h1>Rengjøring</h1>
     <div class="day-nav">
-      <button onclick="changeDay(-1)">‹ Forrige dag</button>
+      <button onclick="changeDay(-1)">‹ Forrige</button>
       <span class="date" id="date-label"></span>
-      <button onclick="changeDay(1)">Neste dag ›</button>
+      <button onclick="changeDay(1)">Neste ›</button>
       <button onclick="goToday()">I dag</button>
-      <button class="report-btn" onclick="showReport()">📊 Rapport</button>
+      <button class="report-btn" onclick="showReport()">Rapport</button>
     </div>
   </header>
   <main id="task-list"></main>
 
   <main id="report-view" style="display:none;">
-    <div class="day-nav" style="background:var(--teal-deep);padding:12px 16px;margin:-18px -16px 16px;">
+    <div class="day-nav">
       <button onclick="changeReportMonth(-1)">‹ Forrige måned</button>
       <span class="date" id="report-month-label"></span>
       <button onclick="changeReportMonth(1)">Neste måned ›</button>
-      <button onclick="hideReport()">← Tilbake</button>
+      <button onclick="hideReport()" style="margin-left:auto;">← Tilbake</button>
     </div>
     <div id="report-content"></div>
   </main>
 
   <footer class="bar">
     <button class="refresh-btn" onclick="load()">Oppdater</button>
-    <span class="auto-label">Oppdateres automatisk hvert 3. minutt</span>
+    <span class="auto-label">Auto · hvert 3. min</span>
   </footer>
 </div>
 
@@ -533,7 +587,7 @@ function renderTask(t){
         <div class="arrival-line">
           Nye gjester inn ${a.checkinTime ? "kl " + a.checkinTime : "samme dag"} — ${a.guests} gjester
         </div>`).join("")
-    : `<div class="arrival-line" style="background:#F0EEE7;border-left-color:var(--line);color:var(--ink-soft);">Ingen innsjekk samme dag</div>`;
+    : `<div class="arrival-line" style="background:#F0EFE7;border-left-color:var(--line);color:var(--ink-soft);">Ingen innsjekk samme dag</div>`;
 
   const thumbHtml = t.imageUrl
     ? `<img class="thumb" src="${t.imageUrl}" alt="${t.propertyName}" />`
@@ -546,13 +600,13 @@ function renderTask(t){
       <button class="photo-delete-btn" onclick="deletePhoto('${t.key}', '${url.replace(/'/g, "\\'")}')" title="Slett bilde">×</button>
     </div>`).join("");
 
-  let paymentBadge;
+  let paymentStamp;
   if(t.selfCleaned){
-    paymentBadge = `<div class="badge self">Rengjort selv</div>`;
+    paymentStamp = `<div class="stamp self">Rengjort selv</div>`;
   } else if(t.paid){
-    paymentBadge = `<div class="badge paid">Betalt ${t.amount} kr</div>`;
+    paymentStamp = `<div class="stamp paid">Betalt · ${t.amount} kr</div>`;
   } else {
-    paymentBadge = `<div class="badge unpaid">Ikke betalt</div>`;
+    paymentStamp = `<div class="stamp unpaid">Ikke betalt</div>`;
   }
 
   return `
@@ -562,51 +616,51 @@ function renderTask(t){
       ${thumbHtml}
       <div class="task-top">
         <div class="prop-name">${t.propertyName}</div>
-        ${paymentBadge}
+        ${paymentStamp}
       </div>
       <div class="row">
         <span class="label">Utsjekk</span>
-        <span class="value">${t.checkoutTime ? 'kl ' + t.checkoutTime : 'Ukjent tidspunkt'}</span>
+        <span class="value">${t.checkoutTime ? t.checkoutTime.slice(0,5) : 'Ukjent'}</span>
       </div>
       <div class="arrivals">${arrivalsHtml}</div>
-      <div class="cleaner-line">Ansvarlig: ${t.cleaner.name || 'Ikke satt'}</div>
+      <div class="cleaner-line">Ansvarlig: <b>${t.cleaner.name || 'Ikke satt'}</b></div>
 
-      <div class="note-box">
-        <label for="note-${t.key}">Beskjeder (f.eks. tidlig innsjekk, sen utsjekk, når leiligheten er klar)</label>
-        <textarea id="note-${t.key}" placeholder="Skriv en beskjed her...">${t.note || ""}</textarea>
-        <button class="note-save-btn" onclick="saveNote('${t.key}')">Lagre beskjed</button>
+      <div class="section note-box">
+        <label class="section-label" for="note-${t.key}">Beskjeder</label>
+        <textarea id="note-${t.key}" placeholder="F.eks. tidlig innsjekk, sen utsjekk, når leiligheten er klar...">${t.note || ""}</textarea>
+        <button class="ghost-btn" onclick="saveNote('${t.key}')">Lagre beskjed</button>
         <span class="note-saved-msg" id="saved-${t.key}">Lagret ✓</span>
       </div>
 
-      <div class="photo-section">
-        <label class="photo-label">Bilder (skader, glemte ting o.l.)</label>
+      <div class="section photo-section">
+        <label class="section-label">Bilder — skader, glemte ting o.l.</label>
         <div class="photo-gallery">${galleryHtml}</div>
         <div class="photo-btn-row">
-          <label class="photo-upload-btn">
+          <label class="ghost-btn" style="margin-top:0; display:inline-block;">
             📷 Ta bilde
-            <input type="file" accept="image/*" capture="environment" class="photo-upload-input" onchange="uploadPhoto('${t.key}', this)" />
+            <input type="file" accept="image/*" capture="environment" style="display:none;" onchange="uploadPhoto('${t.key}', this)" />
           </label>
-          <label class="photo-upload-btn secondary">
+          <label class="ghost-btn" style="margin-top:0; display:inline-block;">
             🖼️ Velg fra galleri
-            <input type="file" accept="image/*" class="photo-upload-input" onchange="uploadPhoto('${t.key}', this)" />
+            <input type="file" accept="image/*" style="display:none;" onchange="uploadPhoto('${t.key}', this)" />
           </label>
         </div>
-        <span class="photo-uploading-msg" id="uploading-${t.key}">Laster opp...</span>
+        <span class="note-saved-msg" id="uploading-${t.key}" style="display:none;">Laster opp …</span>
       </div>
 
-      <div class="payment-box">
-        <label class="photo-label">Betaling</label>
+      <div class="section payment-box">
+        <label class="section-label">Betaling</label>
         <label class="payment-checkbox">
           <input type="checkbox" id="self-${t.key}" ${t.selfCleaned ? 'checked' : ''} onchange="toggleSelfCleaned('${t.key}', this.checked)" />
           Rengjort selv (ingen betaling)
         </label>
         <div class="payment-row" id="payment-row-${t.key}" style="${t.selfCleaned ? 'display:none;' : ''}">
           <input type="number" id="amount-${t.key}" value="${t.amount}" min="0" step="10" />
-          <label class="payment-checkbox">
+          <label class="payment-checkbox" style="margin-bottom:0;">
             <input type="checkbox" id="paid-${t.key}" ${t.paid ? 'checked' : ''} />
             Betalt
           </label>
-          <button class="note-save-btn" onclick="savePayment('${t.key}')">Lagre betaling</button>
+          <button class="ghost-btn" style="margin-top:0;" onclick="savePayment('${t.key}')">Lagre</button>
         </div>
       </div>
 
@@ -720,7 +774,11 @@ async function load(){
     const list = document.getElementById('task-list');
     list.innerHTML = data.tasks.length
       ? data.tasks.map(renderTask).join("")
-      : `<div class="empty">Ingen leiligheter trenger rengjøring denne dagen.</div>`;
+      : `<div class="empty">
+           <span class="empty-icon">✓</span>
+           <div class="empty-title">Ingenting i vente</div>
+           <div class="empty-sub">Ingen leiligheter trenger rengjøring denne dagen.</div>
+         </div>`;
   }catch(e){
     if(e.message !== "unauthorized") console.error(e);
   }
@@ -755,13 +813,13 @@ function changeReportMonth(delta){
 }
 
 function renderReportEntry(e){
-  let badge;
+  let stamp;
   if(e.selfCleaned){
-    badge = `<div class="badge self">Rengjort selv</div>`;
+    stamp = `<div class="stamp self">Rengjort selv</div>`;
   } else if(e.paid){
-    badge = `<div class="badge paid">Betalt ${e.amount} kr</div>`;
+    stamp = `<div class="stamp paid">Betalt · ${e.amount} kr</div>`;
   } else {
-    badge = `<div class="badge unpaid">Ikke betalt ${e.amount} kr</div>`;
+    stamp = `<div class="stamp unpaid">Ikke betalt · ${e.amount} kr</div>`;
   }
   const d = new Date(e.date + 'T00:00:00');
   const dateStr = d.toLocaleDateString('nb-NO', { day: 'numeric', month: 'short' });
@@ -771,7 +829,7 @@ function renderReportEntry(e){
       <div class="re-date">${dateStr}${e.done ? ' · rengjort' : ''}</div>
       <div class="re-name">${e.propertyName}</div>
     </div>
-    ${badge}
+    ${stamp}
   </div>`;
 }
 
@@ -779,7 +837,7 @@ async function loadReport(){
   const yearMonth = isoMonthForOffset(reportMonthOffset);
   document.getElementById('report-month-label').textContent = fmtMonth(yearMonth);
   const content = document.getElementById('report-content');
-  content.innerHTML = `<div class="report-empty">Henter rapport...</div>`;
+  content.innerHTML = `<div class="report-empty">Henter rapport …</div>`;
 
   try{
     const data = await api('/api/report?month=' + yearMonth);
