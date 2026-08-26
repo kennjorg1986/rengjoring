@@ -228,6 +228,46 @@
     display:none;
   }
 
+  .photo-section{margin-top:12px;}
+  .photo-section .photo-label{
+    font-size:12px;
+    font-weight:700;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    display:block;
+    margin-bottom:6px;
+  }
+  .photo-gallery{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom:8px;
+  }
+  .photo-thumb{
+    width:64px;
+    height:64px;
+    object-fit:cover;
+    border-radius:4px;
+    border:1px solid var(--line);
+  }
+  .photo-upload-btn{
+    display:inline-block;
+    background:var(--teal-deep);
+    color:#fff;
+    border:none;
+    padding:7px 14px;
+    font-weight:600;
+    font-size:13px;
+    cursor:pointer;
+  }
+  .photo-upload-input{display:none;}
+  .photo-uploading-msg{
+    font-size:12px;
+    color:var(--ink-soft);
+    margin-left:8px;
+    display:none;
+  }
+
   .done-btn{
     margin-top:12px;
     width:100%;
@@ -300,6 +340,9 @@
 const PW_KEY = "rengjoring_pw";
 let dayOffset = 0;
 
+const CLOUDINARY_CLOUD_NAME = "silizk68";
+const CLOUDINARY_UPLOAD_PRESET = "Rengjoring-bilder";
+
 function unlock(){
   const pw = document.getElementById('pw').value;
   localStorage.setItem(PW_KEY, pw);
@@ -356,6 +399,9 @@ function renderTask(t){
     ? `<img class="thumb" src="${t.imageUrl}" alt="${t.propertyName}" />`
     : "";
 
+  const photos = t.photos || [];
+  const galleryHtml = photos.map(url => `<a href="${url}" target="_blank"><img class="photo-thumb" src="${url}" /></a>`).join("");
+
   return `
   <div class="task ${t.done ? 'done' : ''}" id="task-${t.key}">
     <div class="stub"></div>
@@ -376,6 +422,16 @@ function renderTask(t){
         <textarea id="note-${t.key}" placeholder="Skriv en beskjed her...">${t.note || ""}</textarea>
         <button class="note-save-btn" onclick="saveNote('${t.key}')">Lagre beskjed</button>
         <span class="note-saved-msg" id="saved-${t.key}">Lagret ✓</span>
+      </div>
+
+      <div class="photo-section">
+        <label class="photo-label">Bilder (skader, glemte ting o.l.)</label>
+        <div class="photo-gallery">${galleryHtml}</div>
+        <label class="photo-upload-btn">
+          Last opp bilde
+          <input type="file" accept="image/*" capture="environment" class="photo-upload-input" onchange="uploadPhoto('${t.key}', this)" />
+        </label>
+        <span class="photo-uploading-msg" id="uploading-${t.key}">Laster opp...</span>
       </div>
 
       <button class="done-btn" onclick="toggleDone('${t.key}', ${!t.done})">
@@ -404,6 +460,43 @@ async function saveNote(key){
   if(msg){
     msg.style.display = 'inline';
     setTimeout(() => { msg.style.display = 'none'; }, 2000);
+  }
+}
+
+async function uploadPhoto(key, inputEl){
+  const file = inputEl.files[0];
+  if(!file) return;
+  const msg = document.getElementById(`uploading-${key}`);
+  if(msg) msg.style.display = 'inline';
+
+  try{
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+    const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+      method: 'POST',
+      body: formData
+    });
+    const uploadData = await uploadRes.json();
+
+    if(!uploadData.secure_url){
+      alert('Kunne ikke laste opp bildet. Prøv igjen.');
+      return;
+    }
+
+    await api(`/api/tasks/${encodeURIComponent(key)}/photos`, {
+      method: 'POST',
+      body: JSON.stringify({ url: uploadData.secure_url })
+    });
+
+    load();
+  }catch(e){
+    alert('Noe gikk galt under opplasting.');
+    console.error(e);
+  }finally{
+    if(msg) msg.style.display = 'none';
+    inputEl.value = '';
   }
 }
 
