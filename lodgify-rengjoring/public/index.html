@@ -240,8 +240,12 @@
   .photo-gallery{
     display:flex;
     flex-wrap:wrap;
-    gap:8px;
+    gap:10px;
     margin-bottom:8px;
+  }
+  .photo-item{
+    position:relative;
+    display:inline-block;
   }
   .photo-thumb{
     width:64px;
@@ -249,6 +253,25 @@
     object-fit:cover;
     border-radius:4px;
     border:1px solid var(--line);
+    display:block;
+  }
+  .photo-delete-btn{
+    position:absolute;
+    top:-7px;
+    right:-7px;
+    width:20px;
+    height:20px;
+    border-radius:50%;
+    background:#B23A2F;
+    color:#fff;
+    border:2px solid var(--card);
+    font-size:12px;
+    line-height:1;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:0;
   }
   .photo-upload-btn{
     display:inline-block;
@@ -263,271 +286,3 @@
   .photo-upload-input{display:none;}
   .photo-uploading-msg{
     font-size:12px;
-    color:var(--ink-soft);
-    margin-left:8px;
-    display:none;
-  }
-
-  .done-btn{
-    margin-top:12px;
-    width:100%;
-    padding:10px;
-    font-weight:700;
-    font-size:14px;
-    border:1px solid var(--teal);
-    background:transparent;
-    color:var(--teal);
-    cursor:pointer;
-  }
-  .task.done .done-btn{
-    background:var(--done);
-    border-color:var(--done);
-    color:#fff;
-  }
-
-  .empty{
-    text-align:center;
-    color:var(--ink-soft);
-    padding:60px 20px;
-    font-size:15px;
-  }
-
-  footer.bar{
-    position:fixed;
-    bottom:0;left:0;right:0;
-    background:var(--card);
-    border-top:1px solid var(--line);
-    padding:10px 16px;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    gap:10px;
-  }
-  .auto-label{
-    font-size:12px;
-    color:var(--ink-soft);
-  }
-</style>
-</head>
-<body>
-
-<div id="gate">
-  <p style="font-weight:700;">Skriv inn passord</p>
-  <input type="password" id="pw" placeholder="Passord" />
-  <button onclick="unlock()">Lås opp</button>
-  <p class="err" id="gate-err"></p>
-</div>
-
-<div id="app" style="display:none;">
-  <header>
-    <div class="count" id="count-badge">–</div>
-    <h1>Rengjøring</h1>
-    <div class="day-nav">
-      <button onclick="changeDay(-1)">‹ Forrige dag</button>
-      <span class="date" id="date-label"></span>
-      <button onclick="changeDay(1)">Neste dag ›</button>
-      <button onclick="goToday()" style="margin-left:6px;">I dag</button>
-    </div>
-  </header>
-  <main id="task-list"></main>
-  <footer class="bar">
-    <button class="refresh-btn" onclick="load()">Oppdater</button>
-    <span class="auto-label">Oppdateres automatisk hvert 3. minutt</span>
-  </footer>
-</div>
-
-<script>
-const PW_KEY = "rengjoring_pw";
-let dayOffset = 0;
-
-const CLOUDINARY_CLOUD_NAME = "silizk68";
-const CLOUDINARY_UPLOAD_PRESET = "Rengjoring-bilder";
-
-function unlock(){
-  const pw = document.getElementById('pw').value;
-  localStorage.setItem(PW_KEY, pw);
-  load();
-}
-
-async function api(path, opts={}){
-  const pw = localStorage.getItem(PW_KEY) || "";
-  const res = await fetch(path, {
-    ...opts,
-    headers: { "Content-Type": "application/json", "x-dashboard-password": pw, ...(opts.headers||{}) }
-  });
-  if(res.status === 401){
-    document.getElementById('gate').style.display = 'block';
-    document.getElementById('app').style.display = 'none';
-    document.getElementById('gate-err').textContent = "Feil passord.";
-    throw new Error("unauthorized");
-  }
-  return res.json();
-}
-
-function fmtDate(iso){
-  if(!iso) return "";
-  const d = new Date(iso + "T00:00:00");
-  return d.toLocaleDateString('nb-NO', { weekday:'long', day:'numeric', month:'long' });
-}
-
-function isoDateForOffset(offset){
-  const d = new Date();
-  d.setDate(d.getDate() + offset);
-  return d.toISOString().slice(0, 10);
-}
-
-function changeDay(delta){
-  dayOffset += delta;
-  load();
-}
-
-function goToday(){
-  dayOffset = 0;
-  load();
-}
-
-function renderTask(t){
-  const hasArrival = t.nextArrivals && t.nextArrivals.length > 0;
-  const arrivalsHtml = hasArrival
-    ? t.nextArrivals.map(a => `
-        <div class="arrival-line">
-          Nye gjester inn ${a.checkinTime ? "kl " + a.checkinTime : "samme dag"} — ${a.guests} gjester
-        </div>`).join("")
-    : `<div class="arrival-line" style="background:#F0EEE7;border-left-color:var(--line);color:var(--ink-soft);">Ingen innsjekk samme dag</div>`;
-
-  const thumbHtml = t.imageUrl
-    ? `<img class="thumb" src="${t.imageUrl}" alt="${t.propertyName}" />`
-    : "";
-
-  const photos = t.photos || [];
-  const galleryHtml = photos.map(url => `<a href="${url}" target="_blank"><img class="photo-thumb" src="${url}" /></a>`).join("");
-
-  return `
-  <div class="task ${t.done ? 'done' : ''}" id="task-${t.key}">
-    <div class="stub"></div>
-    <div class="task-body">
-      ${thumbHtml}
-      <div class="task-top">
-        <div class="prop-name">${t.propertyName}</div>
-      </div>
-      <div class="row">
-        <span class="label">Utsjekk</span>
-        <span class="value">${t.checkoutTime ? 'kl ' + t.checkoutTime : 'Ukjent tidspunkt'}</span>
-      </div>
-      <div class="arrivals">${arrivalsHtml}</div>
-      <div class="cleaner-line">Ansvarlig: ${t.cleaner.name || 'Ikke satt'}</div>
-
-      <div class="note-box">
-        <label for="note-${t.key}">Beskjeder (f.eks. tidlig innsjekk, sen utsjekk, når leiligheten er klar)</label>
-        <textarea id="note-${t.key}" placeholder="Skriv en beskjed her...">${t.note || ""}</textarea>
-        <button class="note-save-btn" onclick="saveNote('${t.key}')">Lagre beskjed</button>
-        <span class="note-saved-msg" id="saved-${t.key}">Lagret ✓</span>
-      </div>
-
-      <div class="photo-section">
-        <label class="photo-label">Bilder (skader, glemte ting o.l.)</label>
-        <div class="photo-gallery">${galleryHtml}</div>
-        <label class="photo-upload-btn">
-          Last opp bilde
-          <input type="file" accept="image/*" capture="environment" class="photo-upload-input" onchange="uploadPhoto('${t.key}', this)" />
-        </label>
-        <span class="photo-uploading-msg" id="uploading-${t.key}">Laster opp...</span>
-      </div>
-
-      <button class="done-btn" onclick="toggleDone('${t.key}', ${!t.done})">
-        ${t.done ? '✓ Rengjort' : 'Merk som rengjort'}
-      </button>
-    </div>
-  </div>`;
-}
-
-async function toggleDone(key, done){
-  await api(`/api/tasks/${encodeURIComponent(key)}/done`, {
-    method: 'POST',
-    body: JSON.stringify({ done })
-  });
-  load();
-}
-
-async function saveNote(key){
-  const textarea = document.getElementById(`note-${key}`);
-  const note = textarea ? textarea.value : "";
-  await api(`/api/tasks/${encodeURIComponent(key)}/note`, {
-    method: 'POST',
-    body: JSON.stringify({ note })
-  });
-  const msg = document.getElementById(`saved-${key}`);
-  if(msg){
-    msg.style.display = 'inline';
-    setTimeout(() => { msg.style.display = 'none'; }, 2000);
-  }
-}
-
-async function uploadPhoto(key, inputEl){
-  const file = inputEl.files[0];
-  if(!file) return;
-  const msg = document.getElementById(`uploading-${key}`);
-  if(msg) msg.style.display = 'inline';
-
-  try{
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-
-    const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
-      method: 'POST',
-      body: formData
-    });
-    const uploadData = await uploadRes.json();
-
-    if(!uploadData.secure_url){
-      alert('Kunne ikke laste opp bildet. Prøv igjen.');
-      return;
-    }
-
-    await api(`/api/tasks/${encodeURIComponent(key)}/photos`, {
-      method: 'POST',
-      body: JSON.stringify({ url: uploadData.secure_url })
-    });
-
-    load();
-  }catch(e){
-    alert('Noe gikk galt under opplasting.');
-    console.error(e);
-  }finally{
-    if(msg) msg.style.display = 'none';
-    inputEl.value = '';
-  }
-}
-
-async function load(){
-  try{
-    const dateISO = isoDateForOffset(dayOffset);
-    const data = await api('/api/tasks?date=' + dateISO);
-    document.getElementById('gate').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
-    let label = fmtDate(data.date);
-    if(dayOffset === 0) label += ' (i dag)';
-    document.getElementById('date-label').textContent = label;
-    document.getElementById('count-badge').textContent = data.tasks.length + (data.tasks.length === 1 ? ' leilighet' : ' leiligheter');
-    const list = document.getElementById('task-list');
-    list.innerHTML = data.tasks.length
-      ? data.tasks.map(renderTask).join("")
-      : `<div class="empty">Ingen leiligheter trenger rengjøring denne dagen.</div>`;
-  }catch(e){
-    if(e.message !== "unauthorized") console.error(e);
-  }
-}
-
-if(localStorage.getItem(PW_KEY) !== null){
-  load();
-}
-
-setInterval(() => {
-  if(localStorage.getItem(PW_KEY) !== null && dayOffset === 0){
-    load();
-  }
-}, 3 * 60 * 1000);
-</script>
-</body>
-</html>
