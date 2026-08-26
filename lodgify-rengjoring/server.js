@@ -87,6 +87,13 @@ app.post("/api/tasks/:key/photos/delete", requirePassword, (req, res) => {
   res.json({ key, ...updated });
 });
 
+app.post("/api/tasks/:key/payment", requirePassword, (req, res) => {
+  const { key } = req.params;
+  const { amount, paid, selfCleaned } = req.body;
+  const updated = storage.setPayment(key, { amount, paid, selfCleaned });
+  res.json({ key, ...updated });
+});
+
 app.post("/api/notify-now", requirePassword, async (req, res) => {
   try {
     const tasks = await buildCleaningTasks();
