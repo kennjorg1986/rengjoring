@@ -77,6 +77,16 @@ app.post("/api/tasks/:key/photos", requirePassword, (req, res) => {
   res.json({ key, ...updated });
 });
 
+app.post("/api/tasks/:key/photos/delete", requirePassword, (req, res) => {
+  const { key } = req.params;
+  const { url } = req.body;
+  if (!url) {
+    return res.status(400).json({ error: "Mangler bilde-URL" });
+  }
+  const updated = storage.removePhoto(key, url);
+  res.json({ key, ...updated });
+});
+
 app.post("/api/notify-now", requirePassword, async (req, res) => {
   try {
     const tasks = await buildCleaningTasks();
