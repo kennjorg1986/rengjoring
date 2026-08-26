@@ -26,7 +26,6 @@ function guestName(booking) {
   return booking?.guest?.name || booking.guest_name || "Ukjent gjest";
 }
 
-/** Filtrerer bort avbestilte/avslåtte bookinger, som Lodgify ellers sender med. */
 function isActiveBooking(booking) {
   if (booking.is_deleted) return false;
   if (booking.canceled_at) return false;
@@ -85,6 +84,7 @@ async function buildCleaningTasks(dateISO = isoDatePlusDays(Number(process.env.C
       },
       done: status[key]?.done || false,
       note: status[key]?.note || "",
+      photos: status[key]?.photos || [],
     };
   });
 
