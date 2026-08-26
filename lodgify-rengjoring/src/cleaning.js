@@ -85,6 +85,9 @@ async function buildCleaningTasks(dateISO = isoDatePlusDays(Number(process.env.C
       done: status[key]?.done || false,
       note: status[key]?.note || "",
       photos: status[key]?.photos || [],
+      amount: typeof status[key]?.amount === "number" ? status[key].amount : 400,
+      paid: status[key]?.paid || false,
+      selfCleaned: status[key]?.selfCleaned || false,
     };
   });
 
