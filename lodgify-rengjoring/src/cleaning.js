@@ -96,4 +96,64 @@ async function buildCleaningTasks(dateISO = isoDatePlusDays(Number(process.env.C
   return tasks;
 }
 
-module.exports = { buildCleaningTasks, isoDatePlusDays };
+/**
+ * Bygger en månedlig rapport (YYYY-MM): for hver dag i måneden, se etter
+ * utsjekk hos de kjente leilighetene, og hent inn rengjørings- og
+ * betalingsstatus for hver av dem.
+ */
+async function buildMonthlyReport(yearMonth) {
+  const [y, m] = yearMonth.split("-").map(Number);
+  const daysInMonth = new Date(y, m, 0).getDate();
+
+  const knownIds = cleaners.knownPropertyIds();
+  const status = storage.getAll();
+  const properties = await lodgify.getProperties().catch(() => []);
+  const propertyById = new Map(properties.map((p) => [String(p.id), p]));
+
+  const entries = [];
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateISO = `${yearMonth}-${String(day).padStart(2, "0")}`;
+    const departuresRaw = await lodgify.getDeparturesOn(dateISO);
+    const departures = departuresRaw
+      .filter(isActiveBooking)
+      .filter((dep) => knownIds.includes(String(propertyIdOf(dep))));
+
+    for (const dep of departures) {
+      const pid = String(propertyIdOf(dep));
+      const assignment = cleaners.forProperty(pid);
+      const property = propertyById.get(pid);
+      const key = `${pid}_${dateISO}`;
+
+      entries.push({
+        key,
+        date: dateISO,
+        propertyName: assignment.propertyName || (property && property.name) || `Leilighet ${pid}`,
+        cleanerName: assignment.cleanerName,
+        done: status[key]?.done || false,
+        amount: typeof status[key]?.amount === "number" ? status[key].amount : 400,
+        paid: status[key]?.paid || false,
+        selfCleaned: status[key]?.selfCleaned || false,
+      });
+    }
+  }
+
+  entries.sort((a, b) => a.date.localeCompare(b.date) || a.propertyName.localeCompare(b.propertyName));
+
+  const paidEntries = entries.filter((e) => e.paid);
+  const unpaidEntries = entries.filter((e) => !e.paid && !e.selfCleaned);
+  const selfCleanedEntries = entries.filter((e) => e.selfCleaned);
+
+  const totals = {
+    count: entries.length,
+    paidCount: paidEntries.length,
+    unpaidCount: unpaidEntries.length,
+    selfCleanedCount: selfCleanedEntries.length,
+    totalPaidAmount: paidEntries.reduce((sum, e) => sum + (e.amount || 0), 0),
+    totalUnpaidAmount: unpaidEntries.reduce((sum, e) => sum + (e.amount || 0), 0),
+  };
+
+  return { month: yearMonth, entries, totals };
+}
+
+module.exports = { buildCleaningTasks, buildMonthlyReport, isoDatePlusDays };
