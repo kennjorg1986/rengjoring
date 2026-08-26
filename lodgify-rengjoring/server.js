@@ -3,7 +3,7 @@ const express = require("express");
 const cron = require("node-cron");
 const path = require("path");
 
-const { buildCleaningTasks } = require("./src/cleaning");
+const { buildCleaningTasks, buildMonthlyReport } = require("./src/cleaning");
 const { notifyAll } = require("./src/notify");
 const storage = require("./src/storage");
 
@@ -47,6 +47,20 @@ app.get("/api/tasks", requirePassword, async (req, res) => {
     const dateISO = req.query.date;
     const tasks = await buildCleaningTasks(dateISO);
     res.json({ date: dateISO || tasks[0]?.date || null, tasks });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message, details: err.response ? err.response.data : null });
+  }
+});
+
+app.get("/api/report", requirePassword, async (req, res) => {
+  try {
+    const month = req.query.month;
+    if (!month) {
+      return res.status(400).json({ error: "Mangler måned (YYYY-MM)" });
+    }
+    const report = await buildMonthlyReport(month);
+    res.json(report);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message, details: err.response ? err.response.data : null });
